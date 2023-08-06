@@ -1,11 +1,19 @@
-import argparse, UnityPy, json
+import argparse, UnityPy, json, subprocess, shutil
+
+def decompile(apk_path):
+    print(f"Decompiling {apk_path} into {apk_path[:-4]}")
+    sp = subprocess.Popen(["apktool", "d", "-f", apk_path], shell=True, stdin=subprocess.PIPE)
+    sp.communicate(input=b'\n')
 
 def main(original_apk, modified_apk):
     print(f"Original APK: {original_apk}")
     print(f"Modified APK: {modified_apk}")
+    
+    decompile(original_apk)
+    decompile(modified_apk)
 
-    original_env = UnityPy.load(original_apk)
-    modified_env = UnityPy.load(modified_apk)
+    original_env = UnityPy.load(f"{original_apk[:-4]}/assets/bin/Data/data.unity3d")
+    modified_env = UnityPy.load(f"{modified_apk[:-4]}/assets/bin/Data/data.unity3d")
 
     with open("changes.log", 'w') as output_file:
         diffs = ""
@@ -15,11 +23,15 @@ def main(original_apk, modified_apk):
                 original_data = original_obj.read()
                 modified_obj = modified_env.objects[obj_index]
                 modified_data = modified_obj.read()
-                if original_data.m_IsActive != modified_data.m_IsActive:
-                    diffs += f"{original_data.name.ljust(50)} > {modified_data.m_IsActive}\n"
+                if hasattr(original_data, 'm_IsActive') and hasattr(modified_data, 'm_IsActive'):
+                    if original_data.m_IsActive != modified_data.m_IsActive:
+                        diffs += f"{original_data.name.ljust(50)} > {modified_data.m_IsActive}\n"
 
         if diffs != "":
             output_file.write(diffs)
+    
+    shutil.rmtree(f"{original_apk[:-4]}")
+    shutil.rmtree(f"{modified_apk[:-4]}")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="What Did They Modify?")
