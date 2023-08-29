@@ -1,4 +1,4 @@
-import argparse, UnityPy, json, subprocess, shutil
+import argparse, UnityPy, subprocess, shutil
 
 def decompile(apk_path):
     print(f"Decompiling {apk_path} into {apk_path[:-4]}")
@@ -26,12 +26,15 @@ def main(original_apk, modified_apk):
                 if hasattr(original_data, 'm_IsActive') and hasattr(modified_data, 'm_IsActive'):
                     if original_data.m_IsActive != modified_data.m_IsActive:
                         diffs += f"{original_data.name.ljust(50)} > {modified_data.m_IsActive}\n"
+                        print(f"Found difference in {original_data.name}")
 
         if diffs != "":
             output_file.write(diffs)
     
     shutil.rmtree(f"{original_apk[:-4]}")
     shutil.rmtree(f"{modified_apk[:-4]}")
+
+    subprocess.Popen(["./changes.log"])
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="What Did They Modify?")
