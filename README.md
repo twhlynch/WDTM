@@ -8,3 +8,5 @@ Also useful to see reverse the config for [My AutoModder](https://github.com/twh
 
 > - Wont work for anything other than enabling/disabling objects
 > - Won't work if they are different versions of the game
+
+> Requires Apktool
